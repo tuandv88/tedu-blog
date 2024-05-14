@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using TeduBlog.Api;
 using TeduBlog.Core.Domain.Identity;
+using TeduBlog.Core.SeedWorks;
 using TeduBlog.Data;
+using TeduBlog.Data.SeedWorks;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 var connectionString = configuration.GetConnectionString("DB");
-// Add services to the container.
 
 //Config DB Context and ASP .NET Core Identity
 builder.Services.AddDbContext<TeduBlogContext>(options =>
@@ -35,6 +37,12 @@ builder.Services.Configure<IdentityOptions>(options =>
 	options.User.RequireUniqueEmail = false;
 });
 
+// Add services to the container.
+builder.Services.AddScoped(typeof(IRepository<,>), typeof(RepositoryBase<,>));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+
+
 
 //Default config for ASP .NET Core
 builder.Services.AddControllers();
@@ -56,5 +64,8 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+//Seeding data
+app.MigrateDatabase();
 
 app.Run();
