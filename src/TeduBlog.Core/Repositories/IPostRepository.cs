@@ -8,6 +8,6 @@ namespace TeduBlog.Core.Repositories
 	public interface IPostRepository : IRepository<Post, Guid>
 	{
 		Task<List<Post>> GetPopularPosts(int count);
-		Task<PagedResult<PostInListDTO>> GetPostsPagingAsync(string keyword, Guid? categoryId, int pageIndex = 1, int pageSize = 10);
+		Task<PagedResult<PostInListDTO>> GetPostsPagingAsync(string? keyword, Guid? categoryId, int pageIndex = 1, int pageSize = 10);
 	}
 }
