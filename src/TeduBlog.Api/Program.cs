@@ -3,6 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 using TeduBlog.Api;
+using TeduBlog.Api.Filters;
+using TeduBlog.Api.Services;
+using TeduBlog.Core.ConfigOptions;
 using TeduBlog.Core.Domain.Identity;
 using TeduBlog.Core.Models.Content;
 using TeduBlog.Core.SeedWorks;
@@ -13,6 +16,15 @@ using TeduBlog.Data.SeedWorks;
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 var connectionString = configuration.GetConnectionString("DB");
+var TeduCorsPolicy = "TeduCorsPolicy";
+
+builder.Services.AddCors(o => o.AddPolicy(TeduCorsPolicy, builder =>
+{
+    builder.AllowAnyMethod()
+        .AllowAnyHeader()
+        .WithOrigins(configuration["AllowedOrigins"]?.Split(";"))
+        .AllowCredentials();
+}));
 
 //Config DB Context and ASP .NET Core Identity
 builder.Services.AddDbContext<TeduBlogContext>(options =>
@@ -61,8 +73,15 @@ foreach (var service in services)
 	}
 }
 
+//Auto mapper
 builder.Services.AddAutoMapper(typeof(PostInListDTO));
 
+//Authen and author
+builder.Services.Configure<JwtTokenSettings>(configuration.GetSection("JwtTokenSettings"));
+builder.Services.AddScoped<SignInManager<AppUser>, SignInManager<AppUser>>();
+builder.Services.AddScoped<UserManager<AppUser>, UserManager<AppUser>>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<RoleManager<AppRole>, RoleManager<AppRole>>();
 
 //Default config for ASP .NET Core
 builder.Services.AddControllers();
@@ -97,6 +116,7 @@ if (app.Environment.IsDevelopment())
 	});
 }
 
+app.UseCors(TeduCorsPolicy);
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
